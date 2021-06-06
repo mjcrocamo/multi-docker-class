@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t mjcroc/react-test -f ./client/Dockerfile.dev ./client 
+
+script:
+  - docker run -e CI=true mjcroc/react-test npm test
+
+after_success:
+  - docker build -t mjcroc/multi-docker-class-client ./client
+  - docker build -t mjcroc/multi-docker-class-nginx ./nginx
+  - docker build -t mjcroc/multi-docker-class-server ./server
+  - docker build -t mjcroc/multi-docker-class-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push mjcroc/multi-docker-class-client
+  - docker push mjcroc/multi-docker-class-nginx
+  - docker push mjcroc/multi-docker-class-server
+  - docker push mjcroc/multi-docker-class-worker
